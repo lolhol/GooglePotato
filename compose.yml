@@ -1,0 +1,6 @@
+services:
+  google-potato:
+    build: .
+    volumes:
+      - .:/mnt
+    entrypoint: "sleep inf"

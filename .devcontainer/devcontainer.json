@@ -1,0 +1,41 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
+{
+  "name": "Existing Dockerfile",
+  "dockerComposeFile": "../compose.yml",
+  "service": "google-potato",
+  "workspaceFolder": "/mnt",
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {},
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  // "forwardPorts": [],
+
+  // Run commands after the container is created.
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y clangd gcc g++ make cmake",
+
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools", // C++ extension
+        "llvm-vs-code-extensions.vscode-clangd" // Clangd extension
+      ],
+      "settings": {
+        "C_Cpp.intelliSenseEngine": "default",
+        "C_Cpp.default.intelliSenseMode": "clang-x64",
+        "C_Cpp.default.compilerPath": "/usr/bin/gcc",
+        "C_Cpp.default.includePath": [
+          "${workspaceFolder}/**",
+          "/usr/include",
+          "/usr/local/include"
+        ]
+      }
+    }
+  }
+
+  // Uncomment to connect as an existing user other than the container default.
+  // More info: https://aka.ms/dev-containers-non-root.
+  // "remoteUser": "devcontainer"
+}
