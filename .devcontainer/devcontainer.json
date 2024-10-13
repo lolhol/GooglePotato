@@ -13,14 +13,15 @@
   // "forwardPorts": [],
 
   // Run commands after the container is created.
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y clangd gcc g++ make cmake",
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y clangd gcc g++ make cmake libeigen3-dev",
 
   // Configure tool-specific properties.
   "customizations": {
     "vscode": {
       "extensions": [
         "ms-vscode.cpptools", // C++ extension
-        "llvm-vs-code-extensions.vscode-clangd" // Clangd extension
+        "llvm-vs-code-extensions.vscode-clangd", // Clangd extension
+        "ms-vscode.cmake-tools" // CMake Tools extension for CMake support
       ],
       "settings": {
         "C_Cpp.intelliSenseEngine": "default",
@@ -29,8 +30,12 @@
         "C_Cpp.default.includePath": [
           "${workspaceFolder}/**",
           "/usr/include",
-          "/usr/local/include"
-        ]
+          "/usr/local/include",
+          "/usr/include/eigen3"
+        ],
+        "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+        "cmake.configureOnOpen": true, // Automatically run CMake configure when opening the folder
+        "cmake.generator": "Unix Makefiles" // Ensure CMake uses the correct generator
       }
     }
   }

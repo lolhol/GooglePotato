@@ -16,10 +16,10 @@ include_directories(/usr/lib/jvm/java-1.17.0-openjdk-amd64/include /usr/lib/jvm/
 add_compile_options(-w)
 add_compile_options(-g)
 
-file(GLOB GOOGLE_POTATO_SRC "src/*.cpp" "src/*.h" "src/util/*.h" "src/util/*.cpp")
-add_library(google_potato SHARED ${GOOGLE_POTATO_SRC}
-        src/google_potato.h
-        src/google_potato.cpp)
+file(GLOB_RECURSE GOOGLE_POTATO_SRC "src/*.cpp")
+add_library(google_potato SHARED ${GOOGLE_POTATO_SRC})
 
 target_link_libraries(google_potato ${catkin_LIBRARIES} ${PROTOBUF_LIBRARY} cartographer)
+get_target_property(INCLUDE_CARTO cartographer INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(google_potato PUBLIC ${INCLUDE_CARTO})
 
