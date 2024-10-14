@@ -28,11 +28,13 @@ install(TARGETS google_potato DESTINATION /usr/lib/jni)
 # Java compilation
 
 add_custom_target(JavaCompile
+        COMMAND rm -rf ./java-build
         COMMAND ${CMAKE_COMMAND} -E make_directory ./java-build
         COMMAND javac -d ./java-build ../port/pwrup/google/potato/*.java
 )
 
 add_custom_target(JavaDoc
+        COMMAND rm -rf ./java-doc
         COMMAND ${CMAKE_COMMAND} -E make_directory ./java-doc
         COMMAND javadoc -d ./java-doc ../port/pwrup/google/potato/*.java
 )
@@ -42,7 +44,7 @@ add_custom_target(java
 )
 
 
-add_dependencies(java JavaCompile JavaDoc)
+add_dependencies(java JavaCompile)
 add_dependencies(JavaCompile google_potato)
 add_dependencies(JavaDoc JavaCompile)
 
