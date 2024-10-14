@@ -14,7 +14,9 @@
 #include "util/sensor/Odom.h"
 #include <cartographer/common/configuration_file_resolver.h>
 #include <cartographer/common/lua_parameter_dictionary.h>
+#include <pthread.h>
 #include <string>
+#include <vector>
 
 GooglePotato::GooglePotato(std::string configDir, std::string mainConfigFile,
                            PoseUpdateCallback callback,
@@ -187,4 +189,78 @@ int GooglePotato::handleOdomData(OdomData data) {
   pthread_mutex_unlock(&sensorMutex);
   pthread_mutex_unlock(&mutex);
   return 0;
+}
+
+std::vector<std::vector<float>> GooglePotato::getMapPointsHighRes() {
+  pthread_mutex_lock(&mutex);
+
+  std::vector<std::vector<float>> pointCloud;
+
+  for (const auto &tn : mapBuilder->pose_graph()->GetTrajectoryNodes()) {
+    int count = 0;
+    const auto intensities =
+        tn.data.constant_data->high_resolution_point_cloud.intensities();
+
+    for (const auto &point :
+         tn.data.constant_data->high_resolution_point_cloud.points()) {
+      pointCloud.push_back(
+          {point.position.x(), point.position.y(), point.position.z(),
+           intensities.size() < count ? intensities[count] : 0});
+
+      count++;
+    }
+  }
+
+  pthread_mutex_unlock(&mutex);
+  return pointCloud;
+}
+
+std::vector<std::vector<float>> GooglePotato::getMapPointsLowRes() {
+  pthread_mutex_lock(&mutex);
+
+  std::vector<std::vector<float>> pointCloud;
+
+  for (const auto &tn : mapBuilder->pose_graph()->GetTrajectoryNodes()) {
+    int count = 0;
+    const auto intensities =
+        tn.data.constant_data->low_resolution_point_cloud.intensities();
+    const auto points =
+        tn.data.constant_data->low_resolution_point_cloud.points();
+
+    for (const auto &point : points) {
+      pointCloud.push_back(
+          {point.position.x(), point.position.y(), point.position.z(),
+           intensities.size() < count ? intensities[count] : 0});
+
+      count++;
+    }
+  }
+
+  pthread_mutex_unlock(&mutex);
+  return pointCloud;
+}
+
+std::vector<std::vector<float>> GooglePotato::getMapPointsGravityAligned() {
+  pthread_mutex_lock(&mutex);
+
+  std::vector<std::vector<float>> pointCloud;
+
+  for (const auto &tn : mapBuilder->pose_graph()->GetTrajectoryNodes()) {
+    int count = 0;
+    const auto intensities =
+        tn.data.constant_data->low_resolution_point_cloud.intensities();
+    const auto points =
+        tn.data.constant_data->filtered_gravity_aligned_point_cloud.points();
+
+    for (const auto &point : points) {
+      pointCloud.push_back(
+          {point.position.x(), point.position.y(), point.position.z(),
+           intensities.size() < count ? intensities[count] : 0});
+
+      count++;
+    }
+  }
+
+  pthread_mutex_unlock(&mutex);
+  return pointCloud;
 }

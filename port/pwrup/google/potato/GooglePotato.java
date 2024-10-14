@@ -67,4 +67,20 @@ public class GooglePotato {
      */
     public native void stopAndOptimize();
 
+    /**
+     * @param getType the map type thgat you want to get
+     * @return the map points data in the form of [x, y, z, i, x1, y1, z1, i1, ...]
+     * @note this is a wrapper for "getMapPoints"
+     */
+    public float[] getMap(GetType getType) {
+        return getMapPoints(getType.type);
+    }
+
+    /**
+     * @param getType the type of map that you want to get.
+     * @return the points in format of [x, y, z, i, x1, y1, z1, i1, ...]
+     * @warning This is not the function that you would want to call by default use
+     *          "getMap" function instead!
+     */
+    public native float[] getMapPoints(int getType);
 }

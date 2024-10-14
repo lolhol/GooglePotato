@@ -2,6 +2,7 @@
 #include "util/j_class_util.h"
 #include <jni.h>
 #include <string>
+#include <vector>
 
 class GooglePotatoJava {
 public:
@@ -25,6 +26,17 @@ public:
   void addImuData(ImuData data) { potatoInstance->handleImuData(data); }
 
   void addOdomData(OdomData data) { potatoInstance->handleOdomData(data); }
+
+  std::vector<std::vector<float>> getMapPoints(int getType) {
+    switch (getType) {
+    default:
+      return potatoInstance->getMapPointsHighRes();
+    case 1:
+      return potatoInstance->getMapPointsLowRes();
+    case 2:
+      return potatoInstance->getMapPointsGravityAligned();
+    }
+  }
 
   void stop() { potatoInstance->stopAndOptimize(); }
 
@@ -128,11 +140,39 @@ JNIEXPORT void JNICALL JJava_port_pwrup_google_potato_GooglePotato_addOdomData(
   potato->addOdomData(data);
 }
 
+JNIEXPORT jfloatArray JNICALL
+Java_port_pwrup_google_potato_GooglePotato_getMapPoints(JNIEnv *env,
+                                                        jobject thisobject,
+                                                        jint getType) {
+  const auto potato = (GooglePotatoJava *)ptr_from_obj(env, thisobject);
+  std::vector<std::vector<float>> mapData =
+      potato->getMapPoints(static_cast<int>(getType));
+
+  if (mapData.size() == 0) {
+    return env->NewFloatArray(0);
+  }
+
+  jfloatArray jfloat_array = env->NewFloatArray(mapData.size() * 4);
+
+  float *body = new float[mapData.size() * 4];
+  for (size_t i = 0; i < mapData.size(); ++i) {
+    body[i * 4] = mapData[i][0];
+    body[i * 4 + 1] = mapData[i][1];
+    body[i * 4 + 2] = mapData[i][2];
+    body[i * 4 + 3] = mapData[i][3];
+  }
+
+  env->SetFloatArrayRegion(jfloat_array, 0, mapData.size() * 4, body);
+  delete[] body;
+
+  return jfloat_array;
+}
+
 JNIEXPORT void JNICALL
 Java_port_pwrup_google_potato_GooglePotato_stopAndOptimize(JNIEnv *env,
                                                            jobject thisobject) {
-  const auto potato = (GooglePotato *)ptr_from_obj(env, thisobject);
-  potato->stopAndOptimize();
+  const auto potato = (GooglePotatoJava *)ptr_from_obj(env, thisobject);
+  potato->stop();
 }
 
 JNIEXPORT jfloatArray JNICALL

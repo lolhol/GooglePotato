@@ -41,6 +41,10 @@ public:
   int handleImuData(ImuData data);
   int handleOdomData(OdomData data);
 
+  std::vector<std::vector<float>> getMapPointsLowRes();
+  std::vector<std::vector<float>> getMapPointsHighRes();
+  std::vector<std::vector<float>> getMapPointsGravityAligned();
+
   void stopAndOptimize();
 
 private:
