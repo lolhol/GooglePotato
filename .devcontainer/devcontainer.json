@@ -21,7 +21,8 @@
       "extensions": [
         "ms-vscode.cpptools", // C++ extension
         "llvm-vs-code-extensions.vscode-clangd", // Clangd extension
-        "ms-vscode.cmake-tools" // CMake Tools extension for CMake support
+        "ms-vscode.cmake-tools", // CMake Tools extension for CMake support
+        "vscjava.vscode-java-pack"
       ],
       "settings": {
         "C_Cpp.intelliSenseEngine": "default",

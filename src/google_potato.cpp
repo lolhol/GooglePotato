@@ -95,10 +95,10 @@ void GooglePotato::stopAndOptimize() {
   pthread_mutex_unlock(&mutex);
 }
 
-int GooglePotato::handleImuData(ImuData data, std::string sensor) {
+int GooglePotato::handleImuData(ImuData data) {
   auto has = false;
   for (auto cur : imuSensors) {
-    if (cur.name == sensor) {
+    if (cur.name == data.sensorIdentity.name) {
       has = true;
     }
   }
@@ -125,7 +125,7 @@ int GooglePotato::handleImuData(ImuData data, std::string sensor) {
   return 0;
 }
 
-int GooglePotato::handleLidarData(PointCloud data, std::string sensorName) {
+int GooglePotato::handleLidarData(PointCloud data) {
   pthread_mutex_lock(&mutex);
   if (trajectoryId < 0) {
     pthread_mutex_unlock(&mutex);
@@ -134,7 +134,7 @@ int GooglePotato::handleLidarData(PointCloud data, std::string sensorName) {
 
   auto it =
       std::find_if(lidars.begin(), lidars.end(), [&](const LidarSensor &cur) {
-        return cur.name == sensorName;
+        return cur.name == data.sensorIdentity.name;
       });
 
   if (it == lidars.end()) {
@@ -159,7 +159,7 @@ int GooglePotato::handleLidarData(PointCloud data, std::string sensorName) {
   return 0;
 }
 
-int GooglePotato::handleOdomData(OdomData data, std::string name) {
+int GooglePotato::handleOdomData(OdomData data) {
 
   pthread_mutex_lock(&mutex);
   if (trajectoryId < 0) {
@@ -167,8 +167,9 @@ int GooglePotato::handleOdomData(OdomData data, std::string name) {
     return 1;
   }
 
-  auto it = std::find_if(odom.begin(), odom.end(),
-                         [&](const Odom &cur) { return cur.name == name; });
+  auto it = std::find_if(odom.begin(), odom.end(), [&](const Odom &cur) {
+    return cur.name == data.sensorIdentity.name;
+  });
 
   if (it == odom.end()) {
     pthread_mutex_unlock(&mutex);

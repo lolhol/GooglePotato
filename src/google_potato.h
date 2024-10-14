@@ -37,9 +37,9 @@ public:
                PoseUpdateCallback callback, std::vector<LidarSensor> lidars,
                std::vector<Odom> odom, std::vector<ImuSensor> imuSensors);
 
-  int handleLidarData(PointCloud data, std::string sensor);
-  int handleImuData(ImuData data, std::string sensor);
-  int handleOdomData(OdomData data, std::string odom);
+  int handleLidarData(PointCloud data);
+  int handleImuData(ImuData data);
+  int handleOdomData(OdomData data);
 
   void stopAndOptimize();
 
