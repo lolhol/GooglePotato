@@ -23,14 +23,12 @@ target_link_libraries(google_potato ${catkin_LIBRARIES} ${PROTOBUF_LIBRARY} cart
 get_target_property(INCLUDE_CARTO cartographer INTERFACE_INCLUDE_DIRECTORIES)
 target_include_directories(google_potato PUBLIC ${INCLUDE_CARTO})
 
-install(TARGETS google_potato DESTINATION /usr/lib/jni)
+install(TARGETS google_potato DESTINATION /usr/lib)
 
 # Java compilation
 
 add_custom_target(JavaCompile
-        COMMAND rm -rf ./java-build
-        COMMAND ${CMAKE_COMMAND} -E make_directory ./java-build
-        COMMAND javac -d ./java-build ../port/pwrup/google/potato/*.java
+        COMMAND javac -d . ../port/pwrup/google/potato/*.java
 )
 
 add_custom_target(JavaDoc
@@ -40,7 +38,7 @@ add_custom_target(JavaDoc
 )
 
 add_custom_target(java
-        COMMAND find java-build/port/pwrup/google/potato -name "*.class" | xargs jar cvf ./GooglePotato.jar
+        COMMAND find ./port/pwrup/google/potato -name "*.class" | xargs jar cvf ./GooglePotato.jar
 )
 
 

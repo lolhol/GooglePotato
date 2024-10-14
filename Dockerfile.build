@@ -9,4 +9,4 @@ COPY . /mnt
 RUN mkdir build && \
     cd build && \
     cmake .. && \
-    make
+    make \ make install
