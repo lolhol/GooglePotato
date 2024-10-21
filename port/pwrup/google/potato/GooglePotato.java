@@ -1,5 +1,7 @@
 package port.pwrup.google.potato;
 
+import java.util.List;
+
 public class GooglePotato {
     static {
         System.loadLibrary("google_potato");
@@ -7,9 +9,9 @@ public class GooglePotato {
 
     private long native_ptr;
 
-    public GooglePotato(String dir, String file, ImuSensor[] imusSensors,
-            Odom[] odoms,
-            LidarSensor[] lidarSensors) {
+    public GooglePotato(String dir, String file, List<ImuSensor> imusSensors,
+            List<Odom> odoms,
+            List<LidarSensor> lidarSensors) {
         this.init(dir, file, imusSensors, odoms, lidarSensors);
     }
 
@@ -24,9 +26,9 @@ public class GooglePotato {
      * @param lidarSensors the lidar sensors that you will use
      * @note this is done by default when you create the class
      */
-    public native void init(String dir, String file, ImuSensor[] imusSensors,
-            Odom[] odoms,
-            LidarSensor[] lidarSensors);
+    public native void init(String dir, String file, List<ImuSensor> imusSensors,
+            List<Odom> odoms,
+            List<LidarSensor> lidarSensors);
 
     /**
      * @param timestamp   the current time in ms
