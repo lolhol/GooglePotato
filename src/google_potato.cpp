@@ -23,7 +23,7 @@ GooglePotato::GooglePotato(std::string configDir, std::string mainConfigFile,
                            std::vector<LidarSensor> lidars,
                            std::vector<Odom> odom,
                            std::vector<ImuSensor> imuSensors)
-    : poseUpdateCallback(poseUpdateCallback),
+    : poseUpdateCallback(callback),
       startTime(std::chrono::duration_cast<std::chrono::milliseconds>(
                     std::chrono::system_clock::now().time_since_epoch())
                     .count()),
