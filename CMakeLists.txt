@@ -4,6 +4,9 @@ project(GooglePotato)
 
 set(CMAKE_BUILD_TYPE Release)
 
+enable_testing()
+
+find_package(GTest REQUIRED)
 find_package(cartographer REQUIRED)
 
 find_package(Boost COMPONENTS iostreams REQUIRED)
@@ -12,6 +15,7 @@ option(BUILD_GRPC "build features that require Cartographer gRPC support" false)
 google_initialize_cartographer_project()
 
 include_directories(/usr/lib/jvm/java-1.17.0-openjdk-amd64/include /usr/lib/jvm/java-1.17.0-openjdk-amd64/include/linux)
+include_directories(${GTEST_INCLUDE_DIRS})
 
 add_compile_options(-w)
 add_compile_options(-g)
@@ -47,3 +51,8 @@ add_dependencies(JavaCompile google_potato)
 add_dependencies(JavaDoc JavaCompile)
 
 add_dependencies(google_potato ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} cartographer)
+
+file(GLOB_RECURSE TEST_SRC "src/test/*.cpp")
+add_executable(google_potato_tests ${TEST_SRC})
+target_link_libraries(google_potato_tests ${GTEST_LIBRARIES} pthread google_potato)
+add_test(NAME google_potato_tests COMMAND google_potato_tests)

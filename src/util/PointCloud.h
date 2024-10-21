@@ -11,8 +11,11 @@ class PointCloud {
 public:
   PointCloud(SensorIdentity sensorIdentity);
   PointCloud(int size, SensorIdentity sensorIdentity);
+  PointCloud(std::vector<Eigen::Vector3d> points, SensorIdentity sensorIdentity,
+             std::vector<float> intensities);
 
   void add_point(double x, double y, double z);
+  void add_point(double x, double y);
   void add_point(double x, double y, double z, double intensity);
 
   cartographer::sensor::TimedPointCloudData
