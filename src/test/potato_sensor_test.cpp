@@ -3,7 +3,9 @@
 #include <cstdint>
 #include <ctime>
 #include <gtest/gtest.h>
+#include <iostream>
 #include <mutex>
+#include <ostream>
 #include <thread>
 #include <unistd.h>
 #include <vector>
@@ -22,17 +24,16 @@ static std::vector<PointCloud> getFakeLidarData(std::string name, int64_t time,
                                                 int64_t step) {
   std::vector<PointCloud> lidarData;
   int64_t totalStep = 0;
-  const double radius = 10.0;
-  const double height = 2.0;
+  const double radius = 10.0; // Radius of the circle
 
   for (int i = 0; i < 20; ++i) {
     PointCloud cloud = PointCloud(SensorIdentity(time + totalStep, name));
 
     for (int j = 0; j < 500; ++j) {
-      double angle = 2 * M_PI * j / 500;
-      double x = radius * cos(angle);
-      double y = radius * sin(angle);
-      cloud.add_point(x, y);
+      double angle = 2 * M_PI * j / 500; // Divide circle into 500 points
+      double x = radius * cos(angle);    // X coordinate on the circle
+      double y = radius * sin(angle);    // Y coordinate on the circle
+      cloud.add_point(x, y);             // Add point to the cloud (2D point)
     }
 
     lidarData.push_back(cloud);
@@ -69,6 +70,17 @@ TEST(SensorTests, TestLidarDataAddition) {
 
     i++;
   }
+
+  auto pointsHighRes = potato.getMapPointsHighRes();
+  std::cout << "!!!" << std::endl;
+  auto pointsLowRes = potato.getMapPointsLowRes();
+  std::cout << "!!!" << std::endl;
+  // auto pointsGravityRes = potato.getMapPointsGravityAligned();
+  // std::cout << "!!!" << std::endl;
+
+  std::cout << " points: " << potato.getMapPointsHighRes().size()
+            << potato.getMapPointsLowRes().size() << std::endl;
+  // ASSERT_GT(points.size(), 0);
 
   potato.stopAndOptimize();
 }
