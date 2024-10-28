@@ -7,6 +7,7 @@ set(CMAKE_BUILD_TYPE Release)
 enable_testing()
 
 find_package(GTest REQUIRED)
+find_package(Eigen3 REQUIRED)
 find_package(cartographer REQUIRED)
 
 find_package(Boost COMPONENTS iostreams REQUIRED)
@@ -22,6 +23,8 @@ add_compile_options(-g)
 
 file(GLOB_RECURSE GOOGLE_POTATO_SRC "src/*.cpp" "port/cpp/*.cpp")
 add_library(google_potato SHARED ${GOOGLE_POTATO_SRC})
+
+target_link_libraries(google_potato Eigen3::Eigen)
 
 target_link_libraries(google_potato ${catkin_LIBRARIES} ${PROTOBUF_LIBRARY} cartographer)
 get_target_property(INCLUDE_CARTO cartographer INTERFACE_INCLUDE_DIRECTORIES)
@@ -52,7 +55,8 @@ add_dependencies(JavaDoc JavaCompile)
 
 add_dependencies(google_potato ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} cartographer)
 
-file(GLOB_RECURSE TEST_SRC "src/test/*.cpp")
+
+file(GLOB_RECURSE TEST_SRC "test/*.cpp")
 add_executable(google_potato_tests ${TEST_SRC})
 target_link_libraries(google_potato_tests ${GTEST_LIBRARIES} pthread google_potato)
 add_test(NAME google_potato_tests COMMAND google_potato_tests)

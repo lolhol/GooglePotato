@@ -123,3 +123,38 @@ inline std::vector<Odom> parseOdomList(JNIEnv *env, jobject odomList) {
 
   return odoms;
 }
+
+inline jobject createJavaMap2D(JNIEnv *env, float resolution,
+                               const std::vector<std::vector<float>> &points) {
+  jclass map2DClass = env->FindClass("port/pwrup/google/potato/Map2D");
+  if (map2DClass == nullptr)
+    return nullptr;
+
+  jmethodID constructor = env->GetMethodID(map2DClass, "<init>", "(F[F)V");
+  if (constructor == nullptr) {
+    env->DeleteLocalRef(map2DClass);
+    return nullptr;
+  }
+
+  int totalSize = points.size() * points[0].size();
+  std::vector<float> flatPoints(totalSize);
+  for (size_t i = 0; i < points.size(); ++i) {
+    std::copy(points[i].begin(), points[i].end(),
+              flatPoints.begin() + i * points[0].size());
+  }
+
+  jfloatArray pointsArray = env->NewFloatArray(totalSize);
+  if (pointsArray == nullptr) {
+    env->DeleteLocalRef(map2DClass);
+    return nullptr;
+  }
+  env->SetFloatArrayRegion(pointsArray, 0, totalSize, flatPoints.data());
+
+  jobject map2DObj =
+      env->NewObject(map2DClass, constructor, resolution, pointsArray);
+
+  env->DeleteLocalRef(pointsArray);
+  env->DeleteLocalRef(map2DClass);
+
+  return map2DObj;
+}

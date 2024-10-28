@@ -27,7 +27,7 @@ public:
 
   void addOdomData(OdomData data) { potatoInstance->handleOdomData(data); }
 
-  std::vector<std::vector<float>> getMapPoints(int getType) {
+  std::vector<std::vector<float>> getMapPoints3D(int getType) {
     switch (getType) {
     default:
       return potatoInstance->getMapPointsHighRes();
@@ -36,6 +36,11 @@ public:
     case 2:
       return potatoInstance->getMapPointsGravityAligned();
     }
+  }
+
+  std::tuple<float, std::vector<std::vector<float>>>
+  getMap(float minAlpha, float maxIntensity) {
+    return potatoInstance->getObstructedWallPoints(maxIntensity, minAlpha);
   }
 
   void stop() { potatoInstance->stopAndOptimize(); }
@@ -141,12 +146,12 @@ JNIEXPORT void JNICALL JJava_port_pwrup_google_potato_GooglePotato_addOdomData(
 }
 
 JNIEXPORT jfloatArray JNICALL
-Java_port_pwrup_google_potato_GooglePotato_getMapPoints(JNIEnv *env,
-                                                        jobject thisobject,
-                                                        jint getType) {
+Java_port_pwrup_google_potato_GooglePotato_getMapPoints3D(JNIEnv *env,
+                                                          jobject thisobject,
+                                                          jint getType) {
   const auto potato = (GooglePotatoJava *)ptr_from_obj(env, thisobject);
   std::vector<std::vector<float>> mapData =
-      potato->getMapPoints(static_cast<int>(getType));
+      potato->getMapPoints3D(static_cast<int>(getType));
 
   if (mapData.size() == 0) {
     return env->NewFloatArray(0);
@@ -166,6 +171,17 @@ Java_port_pwrup_google_potato_GooglePotato_getMapPoints(JNIEnv *env,
   delete[] body;
 
   return jfloat_array;
+}
+
+JNIEXPORT jobject JNICALL Java_port_pwrup_google_potato_GooglePotato_get2DMap(
+    JNIEnv *env, jobject thisobject, jfloat minAlpha, jfloat maxIntensity) {
+  const auto potato = (GooglePotatoJava *)ptr_from_obj(env, thisobject);
+  auto mapData = potato->getMap(static_cast<float>(minAlpha),
+                                static_cast<float>(maxIntensity));
+
+  return createJavaMap2D(
+      env, static_cast<float>(std::get<0>(mapData)),
+      static_cast<std::vector<std::vector<float>>>(std::get<1>(mapData)));
 }
 
 JNIEXPORT void JNICALL

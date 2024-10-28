@@ -9,13 +9,28 @@
 #include "util/OdomData.h"
 #include "util/PointCloud.h"
 #include "util/Position.h"
+#include "util/map/Map.h"
+#include "util/map/Pixel.h"
 #include "util/sensor/ImuSensor.h"
 #include "util/sensor/LidarSensor.h"
 #include "util/sensor/Odom.h"
+#include <Eigen/src/Core/Matrix.h>
+#include <boost/iostreams/filter/gzip.hpp>
 #include <cartographer/common/configuration_file_resolver.h>
 #include <cartographer/common/lua_parameter_dictionary.h>
+#include <cartographer/io/submap_painter.h>
+#include <cartographer/mapping/2d/submap_2d.h>
+#include <cartographer/mapping/3d/submap_3d.h>
+#include <cartographer/mapping/id.h>
+#include <cartographer/mapping/proto/pose_graph.pb.h>
+#include <cartographer/mapping/proto/submap.pb.h>
+#include <cartographer/mapping/submaps.h>
+#include <cartographer/transform/transform.h>
+#include <map>
 #include <pthread.h>
 #include <string>
+#include <tuple>
+#include <utility>
 #include <vector>
 
 GooglePotato::GooglePotato(std::string configDir, std::string mainConfigFile,
@@ -263,4 +278,70 @@ std::vector<std::vector<float>> GooglePotato::getMapPointsGravityAligned() {
 
   pthread_mutex_unlock(&mutex);
   return pointCloud;
+}
+
+/**
+   * Intensity values often represent the occupancy probability (how likely a
+   cell is to be an obstacle).
+
+   * Alpha values denote the certainty of that information by indicating whether
+   the cell was observed.
+ */
+std::tuple<float, std::vector<std::vector<float>>>
+GooglePotato::getObstructedWallPoints(double maximumIntensity,
+                                      double minimumAlpha) {
+  pthread_mutex_lock(&mutex);
+
+  std::vector<std::vector<float>> obstructed_points;
+  float resolution;
+  for (const auto &sub : mapBuilder->pose_graph()->GetAllSubmapPoses()) {
+    cartographer::mapping::SubmapId submapId = sub.id;
+    cartographer::transform::Rigid3d pose = sub.data.pose;
+
+    // Retrieve submap texture data.
+    cartographer::mapping::proto::SubmapQuery::Response responseProto;
+    const std::string error =
+        mapBuilder->SubmapToProto(submapId, &responseProto);
+    if (!error.empty() || responseProto.textures_size() == 0) {
+      continue;
+    }
+
+    // Extract the first texture for simplicity.
+    const auto &first_texture = responseProto.textures(0);
+    resolution = first_texture.resolution();
+    int width = first_texture.width();
+    int height = first_texture.height();
+    auto slice_pose =
+        cartographer::transform::ToRigid3(first_texture.slice_pose());
+
+    // Unpack the intensity and alpha channels from the texture data.
+    auto pixels = cartographer::io::UnpackTextureData(first_texture.cells(),
+                                                      width, height);
+
+    // Process each pixel directly to filter obstructed wall points.
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x) {
+        const int index = y * width + x;
+        const uint8_t intensityValue = pixels.intensity[index];
+        const uint8_t alphaValue = pixels.alpha[index];
+
+        if (alphaValue > minimumAlpha && intensityValue < maximumIntensity) {
+          Eigen::Vector2d global_position =
+              pose.translation().head<2>() +
+              slice_pose.translation().head<2>() +
+              Eigen::Vector2d(x * resolution, y * resolution);
+
+          obstructed_points.push_back({
+              static_cast<float>(global_position.x()),
+              static_cast<float>(global_position.y()),
+              0.0f,
+              static_cast<float>(intensityValue),
+          });
+        }
+      }
+    }
+  }
+
+  pthread_mutex_unlock(&mutex);
+  return std::make_tuple(resolution, obstructed_points);
 }

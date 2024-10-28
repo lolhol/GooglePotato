@@ -72,10 +72,10 @@ public class GooglePotato {
     /**
      * @param getType the map type thgat you want to get
      * @return the map points data in the form of [x, y, z, i, x1, y1, z1, i1, ...]
-     * @note this is a wrapper for "getMapPoints"
+     * @note this is a wrapper for "getMapPoints" and "getMap"
      */
-    public float[] getMap(GetType getType) {
-        return getMapPoints(getType.type);
+    public float[] getMapPoints3D(GetType getType) {
+        return getMapPoints3D(getType.type);
     }
 
     /**
@@ -84,5 +84,20 @@ public class GooglePotato {
      * @warning This is not the function that you would want to call by default use
      *          "getMap" function instead!
      */
-    public native float[] getMapPoints(int getType);
+    public native float[] getMapPoints3D(int getType);
+
+    public Map2D getMap2D(float minAlpha, float maxIntensity) {
+        return (Map2D) get2DMap(minAlpha, maxIntensity);
+    }
+
+    /**
+     * @param minAlpha     Alpha values denote the
+     *                     certainty of that information by indicating whether the
+     *                     cell was observed.
+     * @param maxIntensity Intensity values often represent the occupancy
+     *                     probability (how
+     *                     likely a cell is to be an obstacle).
+     * @return [x, y, z, i, ...] obstructed points in the map.
+     */
+    private native Object get2DMap(float minAlpha, float maxIntensity);
 }

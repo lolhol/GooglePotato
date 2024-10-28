@@ -9,9 +9,11 @@
 #include "util/OdomData.h"
 #include "util/PointCloud.h"
 #include "util/Position.h"
+#include "util/map/Map.h"
 #include "util/sensor/ImuSensor.h"
 #include "util/sensor/LidarSensor.h"
 #include "util/sensor/Odom.h"
+#include <Eigen/src/Core/Matrix.h>
 #include <cartographer/common/fixed_ratio_sampler.h>
 #include <cartographer/common/time.h>
 #include <cartographer/io/submap_painter.h>
@@ -44,6 +46,9 @@ public:
   std::vector<std::vector<float>> getMapPointsLowRes();
   std::vector<std::vector<float>> getMapPointsHighRes();
   std::vector<std::vector<float>> getMapPointsGravityAligned();
+
+  std::tuple<float, std::vector<std::vector<float>>>
+  getObstructedWallPoints(double maximumIntensity, double minimumAlpha);
 
   void stopAndOptimize();
 

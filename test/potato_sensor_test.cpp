@@ -1,4 +1,4 @@
-#include "../google_potato.h"
+#include "../src/google_potato.h"
 #include <condition_variable>
 #include <cstdint>
 #include <ctime>
@@ -33,7 +33,7 @@ static std::vector<PointCloud> getFakeLidarData(std::string name, int64_t time,
       double angle = 2 * M_PI * j / 500; // Divide circle into 500 points
       double x = radius * cos(angle);    // X coordinate on the circle
       double y = radius * sin(angle);    // Y coordinate on the circle
-      cloud.add_point(x, y);             // Add point to the cloud (2D point)
+      cloud.add_point(x, y, 1);          // Add point to the cloud (2D point)
     }
 
     lidarData.push_back(cloud);
@@ -83,6 +83,11 @@ TEST(SensorTests, TestLidarDataAddition) {
   // ASSERT_GT(points.size(), 0);
 
   potato.stopAndOptimize();
+  // auto map = potato.paint2DMap();
+  // std::cout << map.map.size() << "!!!!" << std::endl;
+  // paintToPNG("out.png", map);
+
+  auto map = potato.getObstructedWallPoints(120, 0);
 }
 
 int main(int argc, char **argv) {
