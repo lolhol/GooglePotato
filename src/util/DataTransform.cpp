@@ -7,6 +7,7 @@
 #include "cartographer/sensor/imu_data.h"
 #include "cartographer/sensor/timed_point_cloud_data.h"
 #include "cartographer/transform/transform.h"
+#include <cartographer/common/time.h>
 #include <cmath>
 
 double fromXYZWToYaw(double x, double y, double z, double w) {
@@ -36,8 +37,8 @@ std::vector<double> fromRPYToXYZW(double roll, double pitch, double yaw) {
   return result;
 }
 
-cartographer::common::Time toCartoTime(double timestamp_us) {
-  return cartographer::common::FromUniversal(timestamp_us * 10);
+cartographer::common::Time toCartoTime(double timestampMs) {
+  return cartographer::common::FromUniversal(123) + cartographer::common::FromMilliseconds(timestampMs);
 }
 
 double fromHzToSec(double hz) { return (1000.0 / hz); }

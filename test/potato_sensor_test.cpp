@@ -54,7 +54,7 @@ TEST(SensorTests, TestLidarDataAddition) {
   auto potato = GooglePotato(
       "../configuration", "mapping.lua", onPoseUpdate,
       std::vector<LidarSensor>{LidarSensor(0.0, 0.0, 0.0, 6.0, "range")},
-      std::vector<Odom>{}, std::vector<ImuSensor>{});
+      std::vector<Odom>{}, std::vector<ImuSensor>{}, true);
 
   std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 

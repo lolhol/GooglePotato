@@ -100,4 +100,10 @@ public class GooglePotato {
      * @return [x, y, z, i, ...] obstructed points in the map.
      */
     private native Object get2DMap(float minAlpha, float maxIntensity);
+
+    /**
+     * @note This is used to switch on / off the logging. By default it will be set
+     *       to off.
+     */
+    private native void switchLogging();
 }

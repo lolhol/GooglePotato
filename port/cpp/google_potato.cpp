@@ -16,7 +16,7 @@ public:
             lastPosition = position;
           }
         },
-        lidars, odom, imuSensors);
+        lidars, odom, imuSensors, false);
   }
 
   void addPointCloudData(PointCloud data) {
@@ -45,11 +45,22 @@ public:
 
   void stop() { potatoInstance->stopAndOptimize(); }
 
+  void logging(bool state) {
+    this->loggingEnabled = state;
+    this->potatoInstance->setLogging(state);
+  }
+
+  void switchLogging() {
+    this->loggingEnabled = !this->loggingEnabled;
+    this->potatoInstance->setLogging(loggingEnabled);
+  }
+
   Position getLatestPosition() { return lastPosition; }
 
 private:
   Position lastPosition;
   GooglePotato *potatoInstance;
+  bool loggingEnabled = false;
 };
 
 extern "C" {
@@ -66,6 +77,12 @@ JNIEXPORT void JNICALL Java_port_pwrup_google_potato_GooglePotato_init(
   const auto potato = new GooglePotatoJava(configDirStr, configFileStr,
                                            lidarList, odomList, imuList);
   ptr_to_obj(env, thisobject, potato);
+}
+
+JNIEXPORT void JNICALL Java_port_pwrup_google_potato_GooglePotato_switchLogging(
+    JNIEnv *env, jobject thisobject) {
+  const auto potato = (GooglePotatoJava *)ptr_from_obj(env, thisobject);
+  potato->switchLogging();
 }
 
 JNIEXPORT void JNICALL Java_port_pwrup_google_potato_GooglePotato_addLidarData(

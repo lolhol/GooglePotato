@@ -37,7 +37,7 @@ class GooglePotato {
 public:
   GooglePotato(std::string configDir, std::string mainConfigFile,
                PoseUpdateCallback callback, std::vector<LidarSensor> lidars,
-               std::vector<Odom> odom, std::vector<ImuSensor> imuSensors);
+               std::vector<Odom> odom, std::vector<ImuSensor> imuSensors, bool loggingEnabled);
 
   int handleLidarData(PointCloud data);
   int handleImuData(ImuData data);
@@ -52,10 +52,13 @@ public:
 
   void stopAndOptimize();
 
+  void setLogging(bool newLoggingState);
+
 private:
   std::vector<LidarSensor> lidars;
   std::vector<Odom> odom;
   std::vector<ImuSensor> imuSensors;
+  bool loggingEnabled;
 
   PoseUpdateCallback poseUpdateCallback;
 

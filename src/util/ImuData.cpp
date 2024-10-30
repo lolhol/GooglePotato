@@ -1,5 +1,6 @@
 #include "ImuData.h"
 
+#include "DataTransform.h"
 #include "cartographer/sensor/imu_data.h"
 #include <Eigen/Core>
 #include <vector>
@@ -26,18 +27,15 @@ ImuData::ImuData(SensorIdentity sensorIdentity, float linear_accelerations[],
               static_cast<double>(angular_velocities[1]),
               static_cast<double>(angular_velocities[2])) {}
 
-// Function to convert ImuData to Cartographer ImuData format
-cartographer::sensor::ImuData ImuData::toCartoImu(int64_t startTime) {
-  Eigen::Vector3d linear_acceleration(
-      linear_acceleration_x, linear_acceleration_y, linear_acceleration_z);
-  Eigen::Vector3d angular_velocity(angular_velocity_x, angular_velocity_y,
-                                   angular_velocity_z);
+cartographer::sensor::ImuData ImuData::toCartoImu(int64_t startTime)
+{
+    Eigen::Vector3d linear_acceleration(
+        linear_acceleration_x, linear_acceleration_y, linear_acceleration_z);
 
-  double timeSec =
-      static_cast<double>((sensorIdentity.timeUS - startTime)) / 1000.;
+    Eigen::Vector3d angular_velocity(angular_velocity_x, angular_velocity_y,
+                                     angular_velocity_z);
 
-  return cartographer::sensor::ImuData{
-      cartographer::common::FromUniversal(123) +
-          cartographer::common::FromSeconds(timeSec),
-      linear_acceleration, angular_velocity};
+    return cartographer::sensor::ImuData{
+        toCartoTime(sensorIdentity.timeUS),
+        linear_acceleration, angular_velocity};
 }
