@@ -20,14 +20,13 @@ void onPoseUpdate(const Position &position) {
   std::cout << "Pos" << position.x << std::endl;
 }
 
-static std::vector<PointCloud> getFakeLidarData(std::string name, int64_t time,
-                                                int64_t step) {
+static std::vector<PointCloud> getFakeLidarData(std::string name, int64_t time, int64_t step) {
   std::vector<PointCloud> lidarData;
-  int64_t totalStep = 0;
   const double radius = 10.0; // Radius of the circle
+  auto totalTime = time;
 
   for (int i = 0; i < 20; ++i) {
-    PointCloud cloud = PointCloud(SensorIdentity(time + totalStep, name));
+    PointCloud cloud = PointCloud(SensorIdentity(totalTime, name));
 
     for (int j = 0; j < 500; ++j) {
       double angle = 2 * M_PI * j / 500; // Divide circle into 500 points
@@ -37,10 +36,21 @@ static std::vector<PointCloud> getFakeLidarData(std::string name, int64_t time,
     }
 
     lidarData.push_back(cloud);
-    totalStep += step;
+    totalTime += step;
   }
 
   return lidarData;
+}
+
+static std::vector<ImuData> getFakeImuData(std::string name, int64_t time, int64_t step) {
+  auto totalTime = time;
+  std::vector<ImuData> imuFake;
+  for (int i = 0; i < 40; i++) {
+    imuFake.push_back(ImuData(SensorIdentity(totalTime, name), 0.0, 0.0, 9.8, 0.0, 0.0, 0.0));
+    totalTime += step;
+  }
+
+  return imuFake;
 }
 
 static int64_t getCurrentTimeInMilliseconds() {
@@ -89,6 +99,37 @@ TEST(SensorTests, TestLidarDataAddition) {
 
   auto map = potato.getObstructedWallPoints(120, 0);
 }
+
+TEST(SensorTests, TestImuDataAddition) {
+  auto potato = GooglePotato(
+      "../configuration", "mapping.lua", onPoseUpdate,
+      std::vector<LidarSensor>{LidarSensor(0.0, 0.0, 0.0, 6.0, "range")},
+      std::vector<Odom>{}, std::vector<ImuSensor>{}, true);
+
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+  auto fakeDataRange = getFakeLidarData("range", getCurrentTimeInMilliseconds(), 50);
+  auto fakeDataImu = getFakeImuData("imu0", getCurrentTimeInMilliseconds(), 25);
+
+  int i = 0;
+  for (auto c : fakeDataImu) {
+    if (i % 2 == 0) {
+      potato.handleLidarData(fakeDataRange.at(i / 2));
+    }
+
+    potato.handleImuData(c);
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    i++;
+  }
+
+  potato.stopAndOptimize();
+
+  auto map = potato.getObstructedWallPoints(147, 0);
+
+  std::cout << static_cast<std::vector<std::vector<float>>>(std::get<1>(map)).size() << std::endl;
+}
+
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
